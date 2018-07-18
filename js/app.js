@@ -6,7 +6,7 @@ var locations = [
     {title: 'Sergels Torg', location: {lat: 59.3331614, lng: 18.0509036}, id: "4c5b30c7857ca59333cec6cb"}
 ];
 var map;
-var largeInfoWindow;
+var infoWindow;
 var markers = []
 
 function initMap() {
@@ -36,10 +36,10 @@ function initMap() {
         });
         // Push the marker to our array of markers.
         markers.push(marker);
-        largeInfoWindow = new google.maps.InfoWindow();
+        infoWindow = new google.maps.InfoWindow();
         // Create an onclick event to open the large infowindow at each marker.
         marker.addListener('click', function() {
-            populateInfoWindow(this, largeInfoWindow);
+            populateInfoWindow(this);
             bounce(this);
         });
         // Two event listeners - one for mouseover, one for mouseout,
@@ -144,7 +144,7 @@ function AppViewModel() {
     }
 }
 
-function populateInfoWindow(marker, infoWindow, locationDetails) {
+function populateInfoWindow(marker, locationDetails) {
     // Check to make sure the infoWindow is not already opened on this marker.
     if (infoWindow.marker != marker) {
         // Clear the infoWindow content to give foursquare time to load.
