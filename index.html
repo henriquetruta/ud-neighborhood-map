@@ -17,16 +17,14 @@
             <input id="filter-box" type="text" data-bind="value: query, valueUpdate: 'keyup'" placeholder="Filter by Name">
             <ul data-bind="foreach: filteredLocations">
                 <li>
-                    <span data-bind="text: $index"> </span>:
                     <span data-bind="text: title"> </span>
-                    <span data-bind="text: $data"></span>
-                    <button data-bind="click: $parent.showDetails">Details</button>
+                    <button data-bind="click: $parent.toggleShowDetails">Show/Hide Details</button>
                 </li>
             </ul>
             <div data-bind="visible: markerDetails">
                 <img width="160px" height="160px" data-bind="attr:{src: imagePath}"/><br>
                 <span data-bind="text: imageDetails"> </span><br>
-                <span>Likes:</span> <span data-bind="text: likes"> Likes: </span>
+                <span data-bind="text: likes"></span>
                 <button data-bind="click: hideInfo">Close</button>
             </div>
         </div>

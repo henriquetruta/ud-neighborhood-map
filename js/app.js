@@ -6,6 +6,7 @@ var locations = [
     {title: 'Sergels Torg', location: {lat: 59.3331614, lng: 18.0509036}, id: "4c5b30c7857ca59333cec6cb"}
 ];
 var map;
+var markers = []
 
 function makeMarkerIcon(markerColor) {
     var markerImage = new google.maps.MarkerImage(
@@ -26,9 +27,8 @@ function initMap() {
     });
 
     // Create a new blank array for all the listing markers.
-        var markers = []
-        var defaultIcon = makeMarkerIcon('0091ff');
-        var highlightedIcon = makeMarkerIcon('FFFF24');
+        var defaultIcon = makeMarkerIcon('d10a0a');
+        var highlightedIcon = makeMarkerIcon('e59706');
 
         //ko.applyBindings(locations);
         // The following group uses the location array to create an array of markers on initialize.
@@ -41,14 +41,15 @@ function initMap() {
             position: position,
             title: title,
             animation: google.maps.Animation.DROP,
-            //icon: defaultIcon,
+            icon: defaultIcon,
             id: i
         });
         // Push the marker to our array of markers.
         markers.push(marker);
         // Create an onclick event to open the large infowindow at each marker.
         marker.addListener('click', function() {
-            populateInfoWindow(this, largeInfowindow);
+            // populateInfoWindow(this, largeInfowindow);
+            toggleBounce(this);
         });
         // Two event listeners - one for mouseover, one for mouseout,
         // to change the colors back and forth.
@@ -70,6 +71,7 @@ function initMap() {
         }
         map.fitBounds(bounds);
     }
+    function populateInfoWindow(marker, infowindow) {}
 }
 
 var foursquareBaseUrl = "https://api.foursquare.com/v2/venues/";
@@ -77,6 +79,14 @@ var token = "4DP1YIFCPFTYVVOGNPQGJUPTHWGTOL1UPY1VN42W12DPX0HJ";
 var clientId = "XQA2ZAKTSM0GQQE3SKSBCOF3EOFSTQUSR0SE3IH3DI2HV50A";
 var authSuffix = "?v=20161016&client_id=" + clientId + "&client_secret=" + token;
 var querySuffix = "&query=park&intent=browse&radius=2000";
+
+function toggleBounce(marker) {
+    if (marker.getAnimation() !== null) {
+        marker.setAnimation(null);
+    } else {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+    }
+}
 
 function getImageFullUrl(photo) {
     return photo['prefix'] + "300x300" + photo['suffix'];
@@ -95,10 +105,14 @@ function AppViewModel() {
 
     self.filteredLocations = ko.computed(function() {
         if (!self.query()) {
-          return self.locations();
+            markers.map(m => m.setVisible(true));
+            return self.locations();
         } else {
-          return self.locations()
-            .filter(l =>l.title.toLowerCase().indexOf(self.query().toLowerCase()) > -1);
+            markers.map(m =>
+                m.title.toLowerCase().includes(self.query().toLowerCase()) ?
+                m.setVisible(true) : m.setVisible(false));
+            return self.locations().filter(
+                l => l.title.toLowerCase().includes(self.query().toLowerCase()));
         }
     });
 
@@ -106,29 +120,48 @@ function AppViewModel() {
         self.markerDetails(false);
     }
 
-    self.showDetails = function(location) {
+    self.getCorrespondingMarker = function(name) {
+        var i;
+        for (i = 0; i < markers.length; i++) {
+            if (markers[i].title == name) {
+                return markers[i];
+            }
+        }
+        return markers[0];
+    }
+
+    self.toggleShowDetails = function(location) {
         url = foursquareBaseUrl + location.id + "/" + authSuffix;
-        //console.log("ID" + location.id + "  URL: " + url);
         $.ajax({
             type: "GET",
             url: url,
             success: function (response) {
-                var locationDetails = response['response']['venue'];
-                self.imageDetails(locationDetails['name']);
-                self.imagePath(getImageFullUrl(locationDetails['bestPhoto']));
-                self.likes(locationDetails['likes']['count']);
-                self.markerDetails(true);
-                // console.log(imageUrl);
-                // $testElem.text("aeee");
-                // console.log(response['response']['venue']['bestPhoto']);
+                if (self.markerDetails() == true) {
+                    self.markerDetails(false);
+                    // self.hideInfo();
+                } else {
+                    var locationDetails = response['response']['venue'];
+                    var name = locationDetails['name'];
+                    self.imageDetails(name);
+                    self.imagePath(getImageFullUrl(locationDetails['bestPhoto']));
+                    self.likes("Likes: " + locationDetails['likes']['count']);
+                    self.markerDetails(true);
+                }
+                toggleBounce(self.getCorrespondingMarker(name));
             },
-            error: function (error) {
-                console.log("pfff no id");
-                // $testElem.text('deu merdaaaaaa');
+            error: function (xhr) {
+                if (xhr.status == 429) {
+                    alert("Looks like there is some problem with your " +
+                          "Foursquare requests quota. Please, try again later.");
+                } else if (xhr.status >= 401 && xhr.status <= 403) {
+                    alert("There was an authentication error with the Foursquare " +
+                          "API. Check your credentials and try again.");
+                } else {
+                    alert("An error occurred: " + xhr.responseJSON.meta.errorDetail);
+                    console.log(xhr);
+                }
             }
         });
-        // console.log("agora foi " + details);
-        // var $testElem = $('#test');
     }
 }
 
