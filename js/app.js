@@ -6,18 +6,8 @@ var locations = [
     {title: 'Sergels Torg', location: {lat: 59.3331614, lng: 18.0509036}, id: "4c5b30c7857ca59333cec6cb"}
 ];
 var map;
+var largeInfoWindow;
 var markers = []
-
-function makeMarkerIcon(markerColor) {
-    var markerImage = new google.maps.MarkerImage(
-      'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
-      '|40|_|%E2%80%A2',
-      new google.maps.Size(21, 34),
-      new google.maps.Point(0, 0),
-      new google.maps.Point(10, 34),
-      new google.maps.Size(21,34));
-    return markerImage;
-  }
 
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
@@ -46,10 +36,11 @@ function initMap() {
         });
         // Push the marker to our array of markers.
         markers.push(marker);
+        largeInfoWindow = new google.maps.InfoWindow();
         // Create an onclick event to open the large infowindow at each marker.
         marker.addListener('click', function() {
-            // populateInfoWindow(this, largeInfowindow);
-            toggleBounce(this);
+            populateInfoWindow(this, largeInfoWindow);
+            bounce(this);
         });
         // Two event listeners - one for mouseover, one for mouseout,
         // to change the colors back and forth.
@@ -71,7 +62,6 @@ function initMap() {
         }
         map.fitBounds(bounds);
     }
-    function populateInfoWindow(marker, infowindow) {}
 }
 
 var foursquareBaseUrl = "https://api.foursquare.com/v2/venues/";
@@ -79,18 +69,6 @@ var token = "4DP1YIFCPFTYVVOGNPQGJUPTHWGTOL1UPY1VN42W12DPX0HJ";
 var clientId = "XQA2ZAKTSM0GQQE3SKSBCOF3EOFSTQUSR0SE3IH3DI2HV50A";
 var authSuffix = "?v=20161016&client_id=" + clientId + "&client_secret=" + token;
 var querySuffix = "&query=park&intent=browse&radius=2000";
-
-function toggleBounce(marker) {
-    if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-    } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-    }
-}
-
-function getImageFullUrl(photo) {
-    return photo['prefix'] + "300x300" + photo['suffix'];
-}
 
 function AppViewModel() {
     var self = this;
@@ -138,7 +116,6 @@ function AppViewModel() {
             success: function (response) {
                 if (self.markerDetails() == true) {
                     self.markerDetails(false);
-                    // self.hideInfo();
                 } else {
                     var locationDetails = response['response']['venue'];
                     var name = locationDetails['name'];
@@ -147,7 +124,9 @@ function AppViewModel() {
                     self.likes("Likes: " + locationDetails['likes']['count']);
                     self.markerDetails(true);
                 }
-                toggleBounce(self.getCorrespondingMarker(name));
+                var marker = self.getCorrespondingMarker(name);
+                populateInfoWindow(marker, infoWindow, locationDetails);
+                bounce(marker);
             },
             error: function (xhr) {
                 if (xhr.status == 429) {
@@ -162,6 +141,36 @@ function AppViewModel() {
                 }
             }
         });
+    }
+}
+
+function populateInfoWindow(marker, infoWindow, locationDetails) {
+    // Check to make sure the infoWindow is not already opened on this marker.
+    if (infoWindow.marker != marker) {
+        // Clear the infoWindow content to give foursquare time to load.
+        infoWindow.setContent('');
+        infoWindow.marker = marker;
+        // TODO: Uncomment
+        // var name = locationDetails['name'];
+        // var imageUrl = getImageFullUrl(locationDetails['bestPhoto']);
+        // var likes = locationDetails['likes']['count'] + " Likes";
+        // var locationUrl = locationDetails['canonicalUrl'];
+
+        var name = "NOMEEE"
+        var imageUrl = "https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461661155cheshire1-feat.png";
+        var locationUrl = "https://foursquare.com/v/foursquare-hq/4ab7e57cf964a5205f7b20e3";
+        var likes = "5 Likes";
+        var content = ('<div>' +
+            '<span>{0}</span><br>'+
+            '<img width="160px" height="160px" src="{1}"/><br>' +
+            '<a href="{2}" target="_blank">View on Foursquare</a>' +
+            '<span>{3}</span> </div>').format(name, imageUrl, locationUrl, likes);
+        infoWindow.setContent(content);
+        // Make sure the marker property is cleared if the infoWindow is closed.
+        infoWindow.addListener('closeclick', function() {
+            infoWindow.marker = null;});
+        // Open the infoWindow on the correct marker.
+        infoWindow.open(map, marker);
     }
 }
 
