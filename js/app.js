@@ -1,9 +1,9 @@
 var locations = [
-    {title: 'Kungsträdgården', location: {lat: 59.3312, lng: 18.0701}, id: "50a4ed93e4b076212794a85d"},
-    {title: 'Fotografiska', location: {lat: 59.3176787, lng: 18.0840427}, id: "4e733f1cfa76812398c108eb"},
-    {title: 'Storkyrkan', location: {lat: 59.3283089, lng: 18.0615532}, id: "51ed16a1498e8e7bddb91ac8"},
-    {title: 'Stockholms Medeltidsmuseum', location: {lat: 59.3282955, lng: 18.0681193}, id: "568526f5498e3d43edc46556"},
-    {title: 'Sergels Torg', location: {lat: 59.3331614, lng: 18.0509036}, id: "4c5b30c7857ca59333cec6cb"}
+    {title: 'Kungsträdgården', location: {lat: 59.3312, lng: 18.0701}, id: "4adcdaf4f964a520a05c21e3"},
+    {title: 'Fotografiska', location: {lat: 59.3176787, lng: 18.0840427}, id: "4bf57390706e20a1067daa98"},
+    {title: 'Storkyrkan', location: {lat: 59.3283089, lng: 18.0615532}, id: "4adcdaedf964a5208e5a21e3"},
+    {title: 'Museum of Medieval', location: {lat: 59.3282955, lng: 18.0681193}, id: "4b780cb4f964a52084b32ee3"},
+    {title: 'Sergels Torg', location: {lat: 59.3331614, lng: 18.0509036}, id: "4ae9b378f964a520bbb521e3"}
 ];
 var map;
 var infoWindow;
@@ -39,8 +39,9 @@ function initMap() {
         infoWindow = new google.maps.InfoWindow();
         // Create an onclick event to open the large infowindow at each marker.
         marker.addListener('click', function() {
-            populateInfoWindow(this);
-            bounce(this);
+            // Passes the corresponding location of the marker, as the id is
+            // based on the position in the locations list
+            viewModel.toggleShowDetails(locations[this.id]);
         });
         // Two event listeners - one for mouseover, one for mouseout,
         // to change the colors back and forth.
@@ -101,14 +102,16 @@ function AppViewModel() {
     self.getCorrespondingMarker = function(name) {
         var i;
         for (i = 0; i < markers.length; i++) {
-            if (markers[i].title == name) {
+            if (name.includes(markers[i].title)) {
                 return markers[i];
             }
         }
+        console.log("nope");
         return markers[0];
     }
 
-    self.toggleShowDetails = function(location) {
+    self.toggleShowDetails = function(location, marker) {
+
         url = foursquareBaseUrl + location.id + "/" + authSuffix;
         $.ajax({
             type: "GET",
@@ -119,13 +122,14 @@ function AppViewModel() {
                 } else {
                     var locationDetails = response['response']['venue'];
                     var name = locationDetails['name'];
-                    self.imageDetails(name);
-                    self.imagePath(getImageFullUrl(locationDetails['bestPhoto']));
-                    self.likes("Likes: " + locationDetails['likes']['count']);
-                    self.markerDetails(true);
+                    // TODO: DELETE
+                    // self.imageDetails(name);
+                    // self.imagePath(getImageFullUrl(locationDetails['bestPhoto']));
+                    // self.likes("Likes: " + locationDetails['likes']['count']);
+                    // self.markerDetails(true);
                 }
                 var marker = self.getCorrespondingMarker(name);
-                populateInfoWindow(marker, infoWindow, locationDetails);
+                populateInfoWindow(marker, locationDetails);
                 bounce(marker);
             },
             error: function (xhr) {
@@ -144,22 +148,23 @@ function AppViewModel() {
     }
 }
 
+
 function populateInfoWindow(marker, locationDetails) {
     // Check to make sure the infoWindow is not already opened on this marker.
     if (infoWindow.marker != marker) {
         // Clear the infoWindow content to give foursquare time to load.
         infoWindow.setContent('');
         infoWindow.marker = marker;
-        // TODO: Uncomment
-        // var name = locationDetails['name'];
-        // var imageUrl = getImageFullUrl(locationDetails['bestPhoto']);
-        // var likes = locationDetails['likes']['count'] + " Likes";
-        // var locationUrl = locationDetails['canonicalUrl'];
+        var name = locationDetails['name'];
+        var imageUrl = getImageFullUrl(locationDetails['bestPhoto']);
+        var likes = locationDetails['likes']['count'] + " Likes";
+        var locationUrl = locationDetails['canonicalUrl'];
 
-        var name = "NOMEEE"
-        var imageUrl = "https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461661155cheshire1-feat.png";
-        var locationUrl = "https://foursquare.com/v/foursquare-hq/4ab7e57cf964a5205f7b20e3";
-        var likes = "5 Likes";
+        // TODO: Uncomment
+        // var name = "NOMEEE"
+        // var imageUrl = "https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461661155cheshire1-feat.png";
+        // var locationUrl = "https://foursquare.com/v/foursquare-hq/4ab7e57cf964a5205f7b20e3";
+        // var likes = "5 Likes";
         var content = ('<div>' +
             '<span>{0}</span><br>'+
             '<img width="160px" height="160px" src="{1}"/><br>' +
@@ -173,5 +178,5 @@ function populateInfoWindow(marker, locationDetails) {
         infoWindow.open(map, marker);
     }
 }
-
-ko.applyBindings(new AppViewModel());
+var viewModel = new AppViewModel();
+ko.applyBindings(viewModel);
