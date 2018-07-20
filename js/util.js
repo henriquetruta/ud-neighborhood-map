@@ -27,3 +27,14 @@ function makeMarkerIcon(markerColor) {
       new google.maps.Size(21,34));
     return markerImage;
 }
+
+function showMenu() {
+    var menu = document.getElementById("container");
+    if (menu.style.display == "none" || menu.style.display == '') {
+        menu.style.width = '300px';
+        menu.style.display = "block";
+    } else {
+        menu.style.display = "none";
+        menu.style.width = '0px';
+    }
+}

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <head>
     <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-    <div class="container">
+    <div id="map"></div>
+    <button onclick="showMenu()" id="menuButton">Options Menu</button>
+
+    <div id="container">
         <div class="options-box">
           <h1>Your Neighborhood Map</h1>
           <hr>
@@ -14,18 +17,13 @@
             <ul data-bind="foreach: filteredLocations">
                 <li>
                     <span data-bind="text: title"> </span>
-                    <button data-bind="click: $parent.toggleShowDetails">Show/Hide Details</button>
+                    <button class="right" data-bind="click: $parent.toggleShowDetails">Details</button>
                 </li>
             </ul>
-            <!-- DELETEME -->
-            <div data-bind="visible: markerDetails">
-              <img width="160px" height="160px" data-bind="attr:{src: imagePath}"/><br>
-              <span data-bind="text: imageDetails"> </span><br>
-              <span data-bind="text: likes"></span>
-              <button data-bind="click: hideInfo">Close</button>
-            </div>
-            <!-- DELETEME ATE AQUI -->
-    <div id="map"></div>
+          </div>
+        </div>
+    </div>
+
     <script src="js/libs/jquery.min.js"></script>
     <script src="js/libs/knockout-3.4.2.js"></script>
     <script src="js/util.js"></script>

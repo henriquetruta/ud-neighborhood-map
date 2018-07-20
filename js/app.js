@@ -13,7 +13,9 @@ function initMap() {
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 59.3293, lng: 18.0686},
-        zoom: 13
+        zoom: 13,
+        mapTypeControl: false
+
     });
 
     // Create a new blank array for all the listing markers.
@@ -52,7 +54,7 @@ function initMap() {
             this.setIcon(defaultIcon);
         });
         }
-        showListings()
+        showListings();
 
     function showListings() {
         var bounds = new google.maps.LatLngBounds();
@@ -122,11 +124,6 @@ function AppViewModel() {
                 } else {
                     var locationDetails = response['response']['venue'];
                     var name = locationDetails['name'];
-                    // TODO: DELETE
-                    // self.imageDetails(name);
-                    // self.imagePath(getImageFullUrl(locationDetails['bestPhoto']));
-                    // self.likes("Likes: " + locationDetails['likes']['count']);
-                    // self.markerDetails(true);
                 }
                 var marker = self.getCorrespondingMarker(name);
                 populateInfoWindow(marker, locationDetails);
@@ -140,14 +137,13 @@ function AppViewModel() {
                     alert("There was an authentication error with the Foursquare " +
                           "API. Check your credentials and try again.");
                 } else {
-                    alert("An error occurred: " + xhr.responseJSON.meta.errorDetail);
                     console.log(xhr);
+                    alert("An error occurred: " + xhr.responseJSON.meta.errorDetail);
                 }
             }
         });
     }
 }
-
 
 function populateInfoWindow(marker, locationDetails) {
     // Check to make sure the infoWindow is not already opened on this marker.
@@ -160,15 +156,10 @@ function populateInfoWindow(marker, locationDetails) {
         var likes = locationDetails['likes']['count'] + " Likes";
         var locationUrl = locationDetails['canonicalUrl'];
 
-        // TODO: Uncomment
-        // var name = "NOMEEE"
-        // var imageUrl = "https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461661155cheshire1-feat.png";
-        // var locationUrl = "https://foursquare.com/v/foursquare-hq/4ab7e57cf964a5205f7b20e3";
-        // var likes = "5 Likes";
         var content = ('<div>' +
-            '<span>{0}</span><br>'+
+            '<span class="window-title ">{0}</span><br>'+
             '<img width="160px" height="160px" src="{1}"/><br>' +
-            '<a href="{2}" target="_blank">View on Foursquare</a>' +
+            '<a href="{2}" target="_blank">View on Foursquare</a><br>' +
             '<span>{3}</span> </div>').format(name, imageUrl, locationUrl, likes);
         infoWindow.setContent(content);
         // Make sure the marker property is cleared if the infoWindow is closed.
