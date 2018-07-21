@@ -9,13 +9,17 @@ var map;
 var infoWindow;
 var markers = []
 
+
+function showErrorMessage() {
+	alert("There was an error loading Google Maps. Please check your internet connection and auth keys and try again.");
+}
+
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 59.3293, lng: 18.0686},
         zoom: 13,
         mapTypeControl: false
-
     });
 
     // Create a new blank array for all the listing markers.
@@ -71,7 +75,6 @@ var foursquareBaseUrl = "https://api.foursquare.com/v2/venues/";
 var token = "4DP1YIFCPFTYVVOGNPQGJUPTHWGTOL1UPY1VN42W12DPX0HJ";
 var clientId = "XQA2ZAKTSM0GQQE3SKSBCOF3EOFSTQUSR0SE3IH3DI2HV50A";
 var authSuffix = "?v=20161016&client_id=" + clientId + "&client_secret=" + token;
-var querySuffix = "&query=park&intent=browse&radius=2000";
 
 function AppViewModel() {
     var self = this;
